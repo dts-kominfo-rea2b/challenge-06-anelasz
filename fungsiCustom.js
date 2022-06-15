@@ -19,46 +19,49 @@ let modifyFile3 = (val) => {
 
 // TODO: Kerjakan bacaData
 // gunakan variabel file1, file2, dan file3
-//const bacaData = null;
-const bacaData = (fnCallback) => {
-  let listFile=[file1, file2, file3];
-  let arrayOfString= [];
-  let dataTrial=[]
-  
-  for(element of listFile) {
-    fs.readFile(element,'utf8', fnCallback = (err, data) => {
+const dataExtracted = (data) => {
+  let message ='';
+
+  if(data['0'] == undefined){
+      message = data['message'];
+    }
+  else if(data['0']['data'] == undefined){
+      message = data['0']['message'];
+    }
+  else {
+      message = data['0']['data']['message'];
+    }
+  return message.split(" ")[1];
+}
+
+const bacaData = (fnCallback) => { 
+  let dataFinal=[];
+  fs.readFile(file1, 'utf8', (err, data) => {
+    if (err) {
+      fnCallback(err, null);
+      return console.log('Error: ' + err);
+    }
+
+    dataFinal.push(dataExtracted(JSON.parse(data)));
+    fs.readFile(file2, 'utf8', (err, data) => {
       if (err) {
+        fnCallback(err, null);
         return console.log('Error: ' + err);
       }
-      dataString = JSON.parse(data);
-      dataTrial.push(dataString);
-      if(dataString['0'] != undefined) {
-        if(dataString['0']['data'] == undefined) {
-          let dataModif = dataString['0']['message'];
-          dataModif = dataModif.split(" ")[1];
-          arrayOfString.push(dataModif);
-          console.log(arrayOfString);
+
+      dataFinal.push(dataExtracted(JSON.parse(data)));
+      fs.readFile(file3, 'utf8', (err, data) => {
+        if (err) {
+          fnCallback(err, null);
+          return console.log('Error: ' + err);
         }
-        else {
-          let dataModif = dataString['0']['data']['message'];
-          dataModif = dataModif.split(" ")[1];
-          arrayOfString.push(dataModif);
-          console.log(arrayOfString);
-        }
-      }
-      else {
-        let dataModif = dataString['message'];
-        dataModif = dataModif.split(" ")[1];
-        arrayOfString.push(dataModif);
-        console.log(arrayOfString);
-      }
-    }
-    )
-  }
-  return arrayOfString;
-  }
-  console.log(bacaData());
-  
+        dataFinal.push(dataExtracted(JSON.parse(data)));
+        fnCallback(err,dataFinal);
+      });
+    });
+  });
+}
+
 // ! JANGAN DIMODIFIKASI
 module.exports = {
   modifyFile1,
